@@ -5,13 +5,7 @@ const AppState = {
     map: null,
     markers: [],
     programs: [],
-    filteredPrograms: [],
-    layers: {
-        towns: null,
-        counties: null,
-        regions: null
-    },
-    markerClusterGroup: null
+    filteredPrograms: []
 };
 
 // Massachusetts center coordinates
@@ -46,9 +40,6 @@ function initializeMap() {
         maxZoom: 18
     }).addTo(AppState.map);
 
-    // Load boundary layers
-    loadBoundaryLayers();
-
     // Hide loading overlay
     setTimeout(() => {
         document.getElementById('mapLoading').classList.add('hidden');
@@ -56,106 +47,22 @@ function initializeMap() {
 }
 
 // ===========================
-// Boundary Layers
+// Data Initialization
 // ===========================
-async function loadBoundaryLayers() {
-    // Note: In production, these would load actual GeoJSON files
-    // For now, we'll create placeholder functionality
-
-    // Town boundaries layer
-    AppState.layers.towns = L.layerGroup();
-
-    // County boundaries layer
-    AppState.layers.counties = L.layerGroup();
-
-    // Regional boundaries layer
-    AppState.layers.regions = L.layerGroup();
-
-    // Add towns layer by default
-    AppState.layers.towns.addTo(AppState.map);
-
-    // Load actual boundary data
-    loadMassachusettsCounties();
-    loadMassachusettsRegions();
-}
-
-function loadMassachusettsCounties() {
-    // Massachusetts counties with approximate boundaries
+function populateCountyFilter() {
+    // Massachusetts counties
     const counties = [
-        { name: 'Barnstable', center: [41.7, -70.3] },
-        { name: 'Berkshire', center: [42.35, -73.2] },
-        { name: 'Bristol', center: [41.75, -71.1] },
-        { name: 'Dukes', center: [41.4, -70.65] },
-        { name: 'Essex', center: [42.65, -70.9] },
-        { name: 'Franklin', center: [42.58, -72.6] },
-        { name: 'Hampden', center: [42.15, -72.6] },
-        { name: 'Hampshire', center: [42.35, -72.65] },
-        { name: 'Middlesex', center: [42.48, -71.4] },
-        { name: 'Nantucket', center: [41.28, -70.1] },
-        { name: 'Norfolk', center: [42.17, -71.2] },
-        { name: 'Plymouth', center: [41.95, -70.7] },
-        { name: 'Suffolk', center: [42.35, -71.05] },
-        { name: 'Worcester', center: [42.35, -71.9] }
+        'Barnstable', 'Berkshire', 'Bristol', 'Dukes', 'Essex', 'Franklin',
+        'Hampden', 'Hampshire', 'Middlesex', 'Nantucket', 'Norfolk',
+        'Plymouth', 'Suffolk', 'Worcester'
     ];
 
-    // Populate county filter
     const countyFilter = document.getElementById('countyFilter');
     counties.forEach(county => {
         const option = document.createElement('option');
-        option.value = county.name;
-        option.textContent = county.name;
+        option.value = county;
+        option.textContent = county;
         countyFilter.appendChild(option);
-    });
-
-    // Create visual markers for counties (for demonstration)
-    counties.forEach(county => {
-        const circle = L.circle(county.center, {
-            radius: 15000,
-            color: '#2563eb',
-            fillColor: '#3b82f6',
-            fillOpacity: 0.1,
-            weight: 2,
-            opacity: 0.6
-        });
-
-        circle.bindTooltip(county.name + ' County', {
-            permanent: false,
-            direction: 'center',
-            className: 'county-label'
-        });
-
-        AppState.layers.counties.addLayer(circle);
-    });
-}
-
-function loadMassachusettsRegions() {
-    // Massachusetts regions with approximate boundaries
-    const regions = [
-        { name: 'Western MA', center: [42.3, -72.8], color: '#ef4444' },
-        { name: 'Central MA', center: [42.35, -71.9], color: '#f59e0b' },
-        { name: 'Northeast MA', center: [42.65, -71.0], color: '#10b981' },
-        { name: 'Southeast MA', center: [41.9, -71.0], color: '#3b82f6' },
-        { name: 'Cape Cod & Islands', center: [41.7, -70.3], color: '#8b5cf6' }
-    ];
-
-    regions.forEach(region => {
-        const circle = L.circle(region.center, {
-            radius: 25000,
-            color: region.color,
-            fillColor: region.color,
-            fillOpacity: 0.08,
-            weight: 2,
-            opacity: 0.5,
-            dashArray: '5, 5'
-        });
-
-        circle.bindTooltip(region.name, {
-            permanent: false,
-            direction: 'center',
-            className: 'region-label'
-        });
-
-        AppState.layers.regions.addLayer(circle);
     });
 }
 
@@ -163,6 +70,9 @@ function loadMassachusettsRegions() {
 // Sample Data
 // ===========================
 function loadSampleData() {
+    // Populate county dropdown
+    populateCountyFilter();
+
     // Sample afterschool programs data
     AppState.programs = [
         {
@@ -345,7 +255,7 @@ function addProgramMarkers() {
 function createCustomIcon() {
     return L.divIcon({
         className: 'custom-marker',
-        html: '<div style="background-color: #2563eb; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
+        html: '<div style="background-color: #333333; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>',
         iconSize: [24, 24],
         iconAnchor: [12, 12]
     });
@@ -416,8 +326,8 @@ function highlightProgramCard(programId) {
     // Highlight selected card
     const card = document.querySelector(`[data-program-id="${programId}"]`);
     if (card) {
-        card.style.borderColor = '#2563eb';
-        card.style.backgroundColor = '#eff6ff';
+        card.style.borderColor = '#333333';
+        card.style.backgroundColor = '#f5f5f5';
         card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 }
@@ -458,84 +368,6 @@ function clearFilters() {
     applyFilters();
 }
 
-// ===========================
-// Layer Toggle
-// ===========================
-function toggleLayer(layerName, show) {
-    const layer = AppState.layers[layerName];
-    if (!layer) return;
-
-    if (show) {
-        layer.addTo(AppState.map);
-    } else {
-        layer.remove();
-    }
-}
-
-// ===========================
-// Data Upload
-// ===========================
-function handleDataUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        try {
-            const content = e.target.result;
-            let data;
-
-            if (file.name.endsWith('.json')) {
-                data = JSON.parse(content);
-            } else if (file.name.endsWith('.csv')) {
-                data = parseCSV(content);
-            } else {
-                alert('Unsupported file format. Please upload JSON or CSV.');
-                return;
-            }
-
-            // Validate and load data
-            if (Array.isArray(data) && data.length > 0) {
-                AppState.programs = data;
-                AppState.filteredPrograms = [...data];
-                displayPrograms();
-                addProgramMarkers();
-                alert(`Successfully loaded ${data.length} programs!`);
-            } else {
-                alert('Invalid data format. Please check your file.');
-            }
-        } catch (error) {
-            alert('Error reading file: ' + error.message);
-        }
-    };
-
-    reader.readAsText(file);
-}
-
-function parseCSV(csv) {
-    const lines = csv.split('\n');
-    const headers = lines[0].split(',').map(h => h.trim());
-    const data = [];
-
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-
-        const values = lines[i].split(',').map(v => v.trim());
-        const obj = {};
-
-        headers.forEach((header, index) => {
-            obj[header] = values[index];
-        });
-
-        // Convert lat/lng to numbers
-        if (obj.lat) obj.lat = parseFloat(obj.lat);
-        if (obj.lng) obj.lng = parseFloat(obj.lng);
-
-        data.push(obj);
-    }
-
-    return data;
-}
 
 // ===========================
 // Event Listeners
@@ -551,56 +383,4 @@ function setupEventListeners() {
     document.getElementById('countyFilter').addEventListener('change', applyFilters);
     document.getElementById('regionFilter').addEventListener('change', applyFilters);
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
-
-    // Layer toggles
-    document.getElementById('toggleTowns').addEventListener('change', (e) => {
-        toggleLayer('towns', e.target.checked);
-    });
-    document.getElementById('toggleCounties').addEventListener('change', (e) => {
-        toggleLayer('counties', e.target.checked);
-    });
-    document.getElementById('toggleRegions').addEventListener('change', (e) => {
-        toggleLayer('regions', e.target.checked);
-    });
-
-    // Data upload
-    document.getElementById('dataUpload').addEventListener('change', handleDataUpload);
-    document.getElementById('uploadBtn').addEventListener('click', () => {
-        document.getElementById('dataUpload').click();
-    });
-}
-
-// ===========================
-// Export sample data template
-// ===========================
-function downloadSampleTemplate() {
-    const template = {
-        programs: [
-            {
-                id: 1,
-                name: "Program Name",
-                address: "123 Street Address",
-                city: "City Name",
-                county: "County Name",
-                region: "Region (Western/Central/Northeast/Southeast/Cape)",
-                zip: "01234",
-                lat: 42.0,
-                lng: -71.0,
-                phone: "(123) 456-7890",
-                email: "email@example.com",
-                website: "www.example.com",
-                services: "List of services",
-                ageRange: "5-14",
-                capacity: 50
-            }
-        ]
-    };
-
-    const dataStr = JSON.stringify(template, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'program-template.json';
-    a.click();
 }
