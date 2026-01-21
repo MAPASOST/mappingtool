@@ -1,0 +1,4 @@
+id,name,address,city,county,region,zip,lat,lng,phone,email,website,services,ageRange,capacity
+1,Boston Youth Center,123 Main St,Boston,Suffolk,Northeast,02101,42.3601,-71.0589,(617) 555-0100,info@bostonyouth.org,www.bostonyouth.org,"Homework help, Sports, Arts",6-14,50
+2,Springfield After School Program,456 State St,Springfield,Hampden,Western,01101,42.1015,-72.5898,(413) 555-0200,contact@springfieldprogram.org,www.springfieldprogram.org,"STEM, Music, Tutoring",5-12,40
+3,Worcester Learning Center,789 Park Ave,Worcester,Worcester,Central,01601,42.2626,-71.8023,(508) 555-0300,info@worcesterlearning.org,www.worcesterlearning.org,"Reading, Math, Recreation",7-15,60

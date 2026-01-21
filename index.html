@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Massachusetts Afterschool Programs Map</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>Massachusetts Afterschool Programs</h1>
+            <p class="subtitle">Find quality afterschool programs in your area</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h2>Search & Filter</h2>
+
+                <!-- Search -->
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search by name, city, or ZIP code...">
+                    <button id="searchBtn" class="btn-primary">Search</button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filter-section">
+                    <h3>Filters</h3>
+
+                    <div class="filter-group">
+                        <label for="countyFilter">County</label>
+                        <select id="countyFilter">
+                            <option value="">All Counties</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="regionFilter">Region</label>
+                        <select id="regionFilter">
+                            <option value="">All Regions</option>
+                            <option value="Western">Western MA</option>
+                            <option value="Central">Central MA</option>
+                            <option value="Northeast">Northeast MA</option>
+                            <option value="Southeast">Southeast MA</option>
+                            <option value="Cape">Cape Cod & Islands</option>
+                        </select>
+                    </div>
+
+                    <button id="clearFilters" class="btn-secondary">Clear Filters</button>
+                </div>
+
+                <!-- Layer Controls -->
+                <div class="layer-controls">
+                    <h3>Map Overlays</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleTowns" checked>
+                        <span>Town Boundaries</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleCounties">
+                        <span>County Boundaries</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleRegions">
+                        <span>Regional Boundaries</span>
+                    </label>
+                </div>
+
+                <!-- Data Upload -->
+                <div class="upload-section">
+                    <h3>Upload Data</h3>
+                    <input type="file" id="dataUpload" accept=".json,.csv">
+                    <button id="uploadBtn" class="btn-primary">Import Data</button>
+                    <p class="help-text">Upload JSON or CSV file with program data</p>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div class="results-section">
+                <h3>Programs (<span id="resultsCount">0</span>)</h3>
+                <div id="programsList" class="programs-list"></div>
+            </div>
+        </aside>
+
+        <!-- Map -->
+        <main class="map-container">
+            <div id="map"></div>
+            <div id="mapLoading" class="loading-overlay">
+                <div class="spinner"></div>
+                <p>Loading map data...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- App JS -->
+    <script src="app.js"></script>
+</body>
+</html>

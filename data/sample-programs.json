@@ -1,0 +1,53 @@
+[
+  {
+    "id": 1,
+    "name": "Boston Youth Center",
+    "address": "123 Main St",
+    "city": "Boston",
+    "county": "Suffolk",
+    "region": "Northeast",
+    "zip": "02101",
+    "lat": 42.3601,
+    "lng": -71.0589,
+    "phone": "(617) 555-0100",
+    "email": "info@bostonyouth.org",
+    "website": "www.bostonyouth.org",
+    "services": "Homework help, Sports, Arts",
+    "ageRange": "6-14",
+    "capacity": 50
+  },
+  {
+    "id": 2,
+    "name": "Springfield After School Program",
+    "address": "456 State St",
+    "city": "Springfield",
+    "county": "Hampden",
+    "region": "Western",
+    "zip": "01101",
+    "lat": 42.1015,
+    "lng": -72.5898,
+    "phone": "(413) 555-0200",
+    "email": "contact@springfieldprogram.org",
+    "website": "www.springfieldprogram.org",
+    "services": "STEM, Music, Tutoring",
+    "ageRange": "5-12",
+    "capacity": 40
+  },
+  {
+    "id": 3,
+    "name": "Worcester Learning Center",
+    "address": "789 Park Ave",
+    "city": "Worcester",
+    "county": "Worcester",
+    "region": "Central",
+    "zip": "01601",
+    "lat": 42.2626,
+    "lng": -71.8023,
+    "phone": "(508) 555-0300",
+    "email": "info@worcesterlearning.org",
+    "website": "www.worcesterlearning.org",
+    "services": "Reading, Math, Recreation",
+    "ageRange": "7-15",
+    "capacity": 60
+  }
+]

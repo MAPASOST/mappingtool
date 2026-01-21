@@ -1,0 +1,26 @@
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+.env.local
+
+# User uploaded data (optional - uncomment if you don't want to track uploaded data)
+# data/uploaded/
+
+# Temporary files
+tmp/
+temp/
