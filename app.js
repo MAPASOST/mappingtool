@@ -5,7 +5,17 @@ const AppState = {
     map: null,
     markers: [],
     programs: [],
-    filteredPrograms: []
+    filteredPrograms: [],
+    dataLayers: {
+        legislative: null,
+        eec: null,
+        municipalities: null,
+        popDensity: null,
+        income: null,
+        poverty: null,
+        workingParents: null,
+        schoolDistricts: null
+    }
 };
 
 // Massachusetts center coordinates
@@ -73,7 +83,21 @@ function loadSampleData() {
     // Populate county dropdown
     populateCountyFilter();
 
-    // Sample afterschool programs data
+    // Check if admin has uploaded data
+    const uploadedData = localStorage.getItem('programsData');
+    if (uploadedData) {
+        try {
+            AppState.programs = JSON.parse(uploadedData);
+            AppState.filteredPrograms = [...AppState.programs];
+            displayPrograms();
+            addProgramMarkers();
+            return;
+        } catch (e) {
+            console.error('Error loading uploaded data:', e);
+        }
+    }
+
+    // Sample afterschool programs data (fallback)
     AppState.programs = [
         {
             id: 1,
@@ -383,4 +407,188 @@ function setupEventListeners() {
     document.getElementById('countyFilter').addEventListener('change', applyFilters);
     document.getElementById('regionFilter').addEventListener('change', applyFilters);
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
+
+    // Data Layer toggles
+    document.getElementById('toggleLegislative').addEventListener('change', (e) => {
+        toggleDataLayer('legislative', e.target.checked);
+    });
+    document.getElementById('toggleEEC').addEventListener('change', (e) => {
+        toggleDataLayer('eec', e.target.checked);
+    });
+    document.getElementById('toggleMunicipalities').addEventListener('change', (e) => {
+        toggleDataLayer('municipalities', e.target.checked);
+    });
+    document.getElementById('togglePopDensity').addEventListener('change', (e) => {
+        toggleDataLayer('popDensity', e.target.checked);
+    });
+    document.getElementById('toggleIncome').addEventListener('change', (e) => {
+        toggleDataLayer('income', e.target.checked);
+    });
+    document.getElementById('togglePoverty').addEventListener('change', (e) => {
+        toggleDataLayer('poverty', e.target.checked);
+    });
+    document.getElementById('toggleWorkingParents').addEventListener('change', (e) => {
+        toggleDataLayer('workingParents', e.target.checked);
+    });
+    document.getElementById('toggleSchoolDistricts').addEventListener('change', (e) => {
+        toggleDataLayer('schoolDistricts', e.target.checked);
+    });
+}
+
+// ===========================
+// Data Layers
+// ===========================
+async function toggleDataLayer(layerName, show) {
+    if (show) {
+        // Load and show layer
+        if (!AppState.dataLayers[layerName]) {
+            await loadDataLayer(layerName);
+        }
+        if (AppState.dataLayers[layerName]) {
+            AppState.dataLayers[layerName].addTo(AppState.map);
+        }
+    } else {
+        // Hide layer
+        if (AppState.dataLayers[layerName]) {
+            AppState.dataLayers[layerName].remove();
+        }
+    }
+}
+
+async function loadDataLayer(layerName) {
+    const layerConfigs = {
+        legislative: {
+            file: 'data/layers/legislative-districts.geojson',
+            style: { color: '#6366f1', weight: 2, fillOpacity: 0.1 }
+        },
+        eec: {
+            file: 'data/layers/eec-regions.geojson',
+            style: { color: '#8b5cf6', weight: 2, fillOpacity: 0.1, dashArray: '5, 5' }
+        },
+        municipalities: {
+            file: 'data/layers/municipalities.geojson',
+            style: { color: '#64748b', weight: 1, fillOpacity: 0.05 }
+        },
+        popDensity: {
+            file: 'data/layers/population-density.geojson',
+            choropleth: true,
+            property: 'density',
+            colors: ['#f0f9ff', '#bae6fd', '#7dd3fc', '#38bdf8', '#0284c7']
+        },
+        income: {
+            file: 'data/layers/median-income.geojson',
+            choropleth: true,
+            property: 'median_income',
+            colors: ['#fee2e2', '#fecaca', '#fca5a5', '#f87171', '#ef4444']
+        },
+        poverty: {
+            file: 'data/layers/child-poverty.geojson',
+            choropleth: true,
+            property: 'poverty_rate',
+            colors: ['#fef3c7', '#fde68a', '#fcd34d', '#fbbf24', '#f59e0b']
+        },
+        workingParents: {
+            file: 'data/layers/working-parents.geojson',
+            choropleth: true,
+            property: 'working_parent_pct',
+            colors: ['#ddd6fe', '#c4b5fd', '#a78bfa', '#8b5cf6', '#7c3aed']
+        },
+        schoolDistricts: {
+            file: 'data/layers/school-districts.geojson',
+            style: { color: '#10b981', weight: 2, fillOpacity: 0.1 }
+        }
+    };
+
+    const config = layerConfigs[layerName];
+    if (!config) return;
+
+    try {
+        const response = await fetch(config.file);
+        if (!response.ok) {
+            console.warn(`Data layer file not found: ${config.file}`);
+            showLayerNotice(layerName);
+            return;
+        }
+
+        const geojsonData = await response.json();
+
+        let layer;
+        if (config.choropleth) {
+            // Create choropleth layer
+            layer = L.geoJSON(geojsonData, {
+                style: (feature) => {
+                    const value = feature.properties[config.property];
+                    return {
+                        fillColor: getChoroplethColor(value, config),
+                        weight: 1,
+                        opacity: 0.7,
+                        color: '#999',
+                        fillOpacity: 0.6
+                    };
+                },
+                onEachFeature: (feature, layer) => {
+                    const props = feature.properties;
+                    let popupContent = '<div class="popup-content">';
+                    popupContent += `<h3>${props.name || props.TOWN || 'Area'}</h3>`;
+                    popupContent += `<p><strong>${config.property.replace('_', ' ')}:</strong> ${props[config.property] || 'N/A'}</p>`;
+                    popupContent += '</div>';
+                    layer.bindPopup(popupContent);
+                }
+            });
+        } else {
+            // Create simple boundary layer
+            layer = L.geoJSON(geojsonData, {
+                style: config.style,
+                onEachFeature: (feature, layer) => {
+                    const props = feature.properties;
+                    let popupContent = '<div class="popup-content">';
+                    popupContent += `<h3>${props.name || props.TOWN || props.DISTRICT || 'Area'}</h3>`;
+                    if (props.ENROLLMENT) {
+                        popupContent += `<p><strong>Enrollment:</strong> ${props.ENROLLMENT}</p>`;
+                    }
+                    popupContent += '</div>';
+                    layer.bindPopup(popupContent);
+                }
+            });
+        }
+
+        AppState.dataLayers[layerName] = layer;
+    } catch (error) {
+        console.error(`Error loading ${layerName} layer:`, error);
+        showLayerNotice(layerName);
+    }
+}
+
+function getChoroplethColor(value, config) {
+    if (!value || !config.colors) return config.colors[0];
+
+    // Simple quantile-based color assignment
+    // You can customize these ranges based on your data
+    const ranges = [20, 40, 60, 80, 100];
+
+    for (let i = 0; i < ranges.length; i++) {
+        if (value <= ranges[i]) {
+            return config.colors[i];
+        }
+    }
+
+    return config.colors[config.colors.length - 1];
+}
+
+function showLayerNotice(layerName) {
+    const notices = {
+        legislative: 'Legislative districts data not yet loaded. See DATA_SOURCES.md for download instructions.',
+        eec: 'EEC regional office data not yet loaded. See DATA_SOURCES.md for information.',
+        municipalities: 'Municipality boundaries not yet loaded. Download from MassGIS.',
+        popDensity: 'Population density data not yet loaded. See DATA_SOURCES.md.',
+        income: 'Median income data not yet loaded. Download from US Census.',
+        poverty: 'Child poverty data not yet loaded. Download from US Census.',
+        workingParents: 'Working parents data not yet loaded. Download from US Census.',
+        schoolDistricts: 'School districts data not yet loaded. Download from MassGIS or DESE.'
+    };
+
+    console.info(notices[layerName] || 'Data layer not available.');
+
+    // Optionally show a user-friendly notification
+    // You can implement a toast notification system here if desired
 }

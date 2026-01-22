@@ -15,8 +15,16 @@
     <!-- Header -->
     <header>
         <div class="header-content">
-            <h1>Massachusetts Afterschool Programs</h1>
-            <p class="subtitle">Find quality afterschool programs in your area</p>
+            <div>
+                <h1>Massachusetts Afterschool Programs</h1>
+                <p class="subtitle">Find quality afterschool programs in your area</p>
+            </div>
+            <a href="admin-login.html" class="admin-login-btn" title="Admin Login">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                </svg>
+                Admin
+            </a>
         </div>
     </header>
 
@@ -57,6 +65,43 @@
                     </div>
 
                     <button id="clearFilters" class="btn-secondary">Clear Filters</button>
+                </div>
+
+                <!-- Data Layers -->
+                <div class="layer-section">
+                    <h3>Data Layers</h3>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleLegislative">
+                        <span>Legislative Districts</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleEEC">
+                        <span>EEC Regional Offices</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleMunicipalities">
+                        <span>Municipality Boundaries</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="togglePopDensity">
+                        <span>Population Density</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleIncome">
+                        <span>Median Household Income</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="togglePoverty">
+                        <span>Child Poverty Rate</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleWorkingParents">
+                        <span>Working Parent Households</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="toggleSchoolDistricts">
+                        <span>School Districts</span>
+                    </label>
                 </div>
 
             </div>
