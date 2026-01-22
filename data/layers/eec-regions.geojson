@@ -1,0 +1,118 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Boston Regional Office",
+        "region_id": "BOS",
+        "counties": ["Suffolk", "Norfolk", "Parts of Middlesex and Plymouth"],
+        "description": "Serves Suffolk, Norfolk counties and parts of Middlesex and Plymouth"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-71.191406, 42.227859],
+          [-70.917969, 42.227859],
+          [-70.664062, 42.098222],
+          [-70.664062, 41.902277],
+          [-71.015625, 41.771312],
+          [-71.279297, 42.000325],
+          [-71.191406, 42.227859]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Central Regional Office",
+        "region_id": "CEN",
+        "counties": ["Worcester"],
+        "description": "Serves Worcester County"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-72.094727, 42.730716],
+          [-71.455078, 42.553080],
+          [-71.455078, 42.000325],
+          [-72.070312, 42.000325],
+          [-72.246094, 42.162887],
+          [-72.246094, 42.488302],
+          [-72.094727, 42.730716]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Northeast Regional Office",
+        "region_id": "NE",
+        "counties": ["Essex", "Northern Middlesex"],
+        "description": "Serves Essex County and northern Middlesex County including Lowell area"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-71.455078, 42.553080],
+          [-70.664062, 42.877892],
+          [-70.488281, 42.585444],
+          [-70.751953, 42.293564],
+          [-71.191406, 42.227859],
+          [-71.455078, 42.553080]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Southeast Regional Office",
+        "region_id": "SE",
+        "counties": ["Bristol", "Plymouth", "Cape Cod & Islands"],
+        "description": "Serves Bristol, southern Plymouth, Barnstable, Dukes, and Nantucket counties"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-71.279297, 42.000325],
+          [-71.015625, 41.771312],
+          [-70.664062, 41.902277],
+          [-70.312500, 41.640078],
+          [-69.960938, 41.376809],
+          [-70.136719, 41.178654],
+          [-70.664062, 41.178654],
+          [-71.103516, 41.376809],
+          [-71.367188, 41.705729],
+          [-71.279297, 42.000325]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Western Regional Office",
+        "region_id": "WEST",
+        "counties": ["Berkshire", "Franklin", "Hampshire", "Hampden"],
+        "description": "Serves Berkshire, Franklin, Hampshire, and Hampden counties"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-73.508301, 42.730716],
+          [-73.508301, 42.084478],
+          [-73.245544, 42.038974],
+          [-72.910156, 42.000325],
+          [-72.773438, 41.869561],
+          [-72.246094, 41.869561],
+          [-72.070312, 42.000325],
+          [-71.455078, 42.000325],
+          [-71.455078, 42.553080],
+          [-72.094727, 42.730716],
+          [-72.597656, 42.811522],
+          [-73.067017, 42.747012],
+          [-73.508301, 42.730716]
+        ]]
+      }
+    }
+  ]
+}
