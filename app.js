@@ -77,13 +77,29 @@ function populateCountyFilter() {
 }
 
 // ===========================
-// Sample Data
+// Load Data
 // ===========================
-function loadSampleData() {
+async function loadSampleData() {
     // Populate county dropdown
     populateCountyFilter();
 
-    // Check if admin has uploaded data
+    // Try to load from data file first (shared data for all users)
+    try {
+        const response = await fetch('data/programs.json');
+        if (response.ok) {
+            const data = await response.json();
+            AppState.programs = data;
+            AppState.filteredPrograms = [...AppState.programs];
+            displayPrograms();
+            addProgramMarkers();
+            console.log(`✓ Loaded ${data.length} programs from data/programs.json`);
+            return;
+        }
+    } catch (e) {
+        console.log('→ No data/programs.json file found, checking localStorage...');
+    }
+
+    // Check if admin has uploaded data in localStorage (for preview/testing)
     const uploadedData = localStorage.getItem('programsData');
     if (uploadedData) {
         try {
@@ -91,6 +107,7 @@ function loadSampleData() {
             AppState.filteredPrograms = [...AppState.programs];
             displayPrograms();
             addProgramMarkers();
+            console.log(`✓ Loaded ${AppState.programs.length} programs from localStorage (admin preview)`);
             return;
         } catch (e) {
             console.error('Error loading uploaded data:', e);
@@ -98,6 +115,7 @@ function loadSampleData() {
     }
 
     // Sample afterschool programs data (fallback)
+    console.log('→ Loading sample data...');
     AppState.programs = [
         {
             id: 1,

@@ -92,15 +92,15 @@ function uploadFile() {
             // Validate data
             validatePrograms(programs);
 
-            // Store data in localStorage
+            // Store data in localStorage (for preview)
             localStorage.setItem('programsData', JSON.stringify(programs));
             localStorage.setItem('lastUpdated', new Date().toISOString());
 
             // Update display
             loadCurrentData();
 
-            // Show success message
-            showSuccess(`Successfully imported ${programs.length} programs!`);
+            // Show success message with download button
+            showSuccessWithDownload(programs.length);
 
             // Reset file input
             selectedFile = null;
@@ -261,6 +261,23 @@ function showSuccess(message) {
     }, 5000);
 }
 
+function showSuccessWithDownload(count) {
+    hideMessages();
+    const successMsg = document.getElementById('successMessage');
+    successMsg.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>✓ Successfully imported ${count} programs!</span>
+            <button onclick="downloadProgramsJSON()" style="padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 0.375rem; font-size: 0.875rem; cursor: pointer; margin-left: 1rem;">
+                Download programs.json
+            </button>
+        </div>
+        <div style="margin-top: 0.75rem; font-size: 0.875rem; opacity: 0.9;">
+            Download the file and add it to your repository at <code style="background: rgba(0,0,0,0.1); padding: 0.125rem 0.375rem; border-radius: 0.25rem;">data/programs.json</code>
+        </div>
+    `;
+    successMsg.classList.add('show');
+}
+
 function showError(message) {
     hideMessages();
     const errorMsg = document.getElementById('errorMessage');
@@ -299,4 +316,56 @@ function downloadTemplate() {
 
 function viewMap() {
     window.location.href = 'index.html';
+}
+
+function downloadProgramsJSON() {
+    const dataStr = localStorage.getItem('programsData');
+    if (!dataStr) {
+        alert('No program data to download. Please import a CSV file first.');
+        return;
+    }
+
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'programs.json';
+    a.click();
+    URL.revokeObjectURL(url);
+
+    // Show instructions
+    setTimeout(() => {
+        if (confirm('File downloaded! Would you like to see instructions on how to update your repository?')) {
+            showUpdateInstructions();
+        }
+    }, 500);
+}
+
+function showUpdateInstructions() {
+    const instructions = `
+HOW TO UPDATE YOUR MAP DATA:
+
+The programs.json file has been downloaded to your computer.
+Follow these steps to make it live on your map:
+
+OPTION 1 - Using GitHub Web Interface (Easiest):
+1. Go to: https://github.com/MAPASOST/mappingtool
+2. Navigate to the 'data' folder
+3. Click "Add file" → "Upload files"
+4. Drag the downloaded programs.json file
+5. Scroll down and click "Commit changes"
+6. Your map will update in 1-2 minutes!
+
+OPTION 2 - Using Git Command Line:
+1. Place programs.json in your local repo at: data/programs.json
+2. Run these commands:
+   git add data/programs.json
+   git commit -m "Update afterschool programs data"
+   git push origin claude/ma-afterschool-programs-map-ngHCL
+3. Your map will update in 1-2 minutes!
+
+NOTE: After updating, clear your browser cache or do a hard refresh (Ctrl+F5 or Cmd+Shift+R) to see the changes immediately.
+    `.trim();
+
+    alert(instructions);
 }
