@@ -89,7 +89,7 @@ function uploadFile() {
                 throw new Error('No valid program data found in CSV');
             }
 
-            // Validate data
+            // Validate data (only requires name, lat, lng - all other fields optional)
             validatePrograms(programs);
 
             // Store data in localStorage (for preview)
@@ -101,6 +101,10 @@ function uploadFile() {
 
             // Show success message with download button
             showSuccessWithDownload(programs.length);
+
+            // Show info about console warnings if user wants details
+            console.log('✓ Successfully imported', programs.length, 'programs');
+            console.log('ℹ Check browser console above for any warnings about missing optional fields');
 
             // Reset file input
             selectedFile = null;
@@ -147,8 +151,21 @@ function parseCSV(csv) {
         // Convert numeric fields
         if (program.lat) program.lat = parseFloat(program.lat);
         if (program.lng) program.lng = parseFloat(program.lng);
-        if (program.capacity) program.capacity = parseInt(program.capacity);
+        if (program.capacity) program.capacity = parseInt(program.capacity) || null;
         if (program.id) program.id = parseInt(program.id) || program.id;
+
+        // Set defaults for missing fields
+        if (!program.id) program.id = i; // Use row number as fallback ID
+        if (!program.address) program.address = '';
+        if (!program.city) program.city = '';
+        if (!program.county) program.county = '';
+        if (!program.region) program.region = '';
+        if (!program.zip) program.zip = '';
+        if (!program.phone) program.phone = '';
+        if (!program.email) program.email = '';
+        if (!program.website) program.website = '';
+        if (!program.services) program.services = '';
+        if (!program.ageRange) program.ageRange = '';
 
         programs.push(program);
     }
@@ -179,25 +196,40 @@ function parseCSVLine(line) {
 }
 
 function validatePrograms(programs) {
-    const requiredFields = ['id', 'name', 'city', 'county', 'lat', 'lng'];
+    // Only require absolute essentials: name and coordinates
+    const requiredFields = ['name', 'lat', 'lng'];
+    const warnings = [];
 
     programs.forEach((program, index) => {
+        const rowNum = index + 2;
+
+        // Check required fields
         requiredFields.forEach(field => {
             if (!program[field]) {
-                throw new Error(`Row ${index + 2}: Missing required field "${field}"`);
+                throw new Error(`Row ${rowNum}: Missing required field "${field}"`);
             }
         });
 
-        // Validate coordinates
+        // Validate coordinates are numbers
         if (isNaN(program.lat) || isNaN(program.lng)) {
-            throw new Error(`Row ${index + 2}: Invalid coordinates`);
+            throw new Error(`Row ${rowNum}: Invalid coordinates (lat: ${program.lat}, lng: ${program.lng})`);
         }
 
-        // Validate Massachusetts coordinates (approximately)
+        // Warn if coordinates seem outside Massachusetts (but don't fail)
         if (program.lat < 41 || program.lat > 43 || program.lng < -74 || program.lng > -69) {
-            throw new Error(`Row ${index + 2}: Coordinates outside Massachusetts bounds`);
+            warnings.push(`Row ${rowNum} (${program.name}): Coordinates may be outside Massachusetts`);
         }
+
+        // Warn about missing optional but recommended fields
+        if (!program.city) warnings.push(`Row ${rowNum} (${program.name}): Missing city`);
+        if (!program.county) warnings.push(`Row ${rowNum} (${program.name}): Missing county`);
     });
+
+    // Log warnings to console but don't fail
+    if (warnings.length > 0) {
+        console.warn('Data import warnings:');
+        warnings.forEach(w => console.warn('  - ' + w));
+    }
 }
 
 function loadCurrentData() {
