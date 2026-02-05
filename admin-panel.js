@@ -132,8 +132,47 @@ function parseCSV(csv) {
         throw new Error('CSV file is empty or has no data rows');
     }
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+    const rawHeaders = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
     const programs = [];
+
+    // Map common column name variations to standard names
+    const headerMapping = {
+        'name': ['name', 'program name', 'programname', 'program_name', 'facility name'],
+        'lat': ['lat', 'latitude', 'y', 'y_coord'],
+        'lng': ['lng', 'lon', 'long', 'longitude', 'x', 'x_coord'],
+        'address': ['address', 'street', 'street address', 'location'],
+        'city': ['city', 'town', 'municipality'],
+        'county': ['county'],
+        'region': ['region', 'area'],
+        'zip': ['zip', 'zipcode', 'zip code', 'postal code', 'postalcode'],
+        'phone': ['phone', 'telephone', 'phone number', 'contact number'],
+        'email': ['email', 'e-mail', 'contact email'],
+        'website': ['website', 'web site', 'url', 'web'],
+        'services': ['services', 'programs', 'offerings'],
+        'ageRange': ['agerange', 'age range', 'age_range', 'ages', 'age group'],
+        'capacity': ['capacity', 'max capacity', 'enrollment']
+    };
+
+    // Create normalized header map
+    const normalizedHeaders = {};
+    rawHeaders.forEach((header, index) => {
+        const normalized = header.toLowerCase().trim();
+
+        // Find which standard field this maps to
+        for (const [standardName, variations] of Object.entries(headerMapping)) {
+            if (variations.includes(normalized)) {
+                normalizedHeaders[standardName] = index;
+                break;
+            }
+        }
+
+        // If no mapping found, keep original header as-is
+        if (!Object.values(normalizedHeaders).includes(index)) {
+            normalizedHeaders[header] = index;
+        }
+    });
+
+    console.log('Detected columns:', Object.keys(normalizedHeaders));
 
     for (let i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue;
@@ -142,11 +181,12 @@ function parseCSV(csv) {
         const values = parseCSVLine(lines[i]);
         const program = {};
 
-        headers.forEach((header, index) => {
-            let value = values[index] || '';
+        // Map values using normalized headers
+        for (const [standardName, valueIndex] of Object.entries(normalizedHeaders)) {
+            let value = values[valueIndex] || '';
             value = value.trim().replace(/^"|"$/g, ''); // Remove quotes
-            program[header] = value;
-        });
+            program[standardName] = value;
+        }
 
         // Convert numeric fields
         if (program.lat) program.lat = parseFloat(program.lat);
@@ -203,16 +243,28 @@ function validatePrograms(programs) {
     programs.forEach((program, index) => {
         const rowNum = index + 2;
 
-        // Check required fields
+        // Check required fields with better error messages
         requiredFields.forEach(field => {
-            if (!program[field]) {
-                throw new Error(`Row ${rowNum}: Missing required field "${field}"`);
+            if (!program[field] || program[field] === '') {
+                const availableFields = Object.keys(program).filter(k => program[k] !== '').join(', ');
+                throw new Error(
+                    `Row ${rowNum}: Missing required field "${field}"\n\n` +
+                    `Required: name, lat (latitude), lng (longitude)\n` +
+                    `Found columns with data: ${availableFields || 'none'}\n\n` +
+                    `TIP: Make sure your CSV has columns named "name", "lat" (or "latitude"), and "lng" (or "longitude", "lon", "long")`
+                );
             }
         });
 
         // Validate coordinates are numbers
         if (isNaN(program.lat) || isNaN(program.lng)) {
-            throw new Error(`Row ${rowNum}: Invalid coordinates (lat: ${program.lat}, lng: ${program.lng})`);
+            throw new Error(
+                `Row ${rowNum}: Invalid coordinates\n` +
+                `lat: "${program.lat}" (must be a number)\n` +
+                `lng: "${program.lng}" (must be a number)\n\n` +
+                `Example valid coordinates for Massachusetts:\n` +
+                `Boston: lat 42.3601, lng -71.0589`
+            );
         }
 
         // Warn if coordinates seem outside Massachusetts (but don't fail)
