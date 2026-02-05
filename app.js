@@ -268,8 +268,14 @@ function addProgramMarkers() {
     AppState.markers.forEach(marker => marker.remove());
     AppState.markers = [];
 
-    // Add markers for filtered programs
+    // Add markers for filtered programs (only those with valid coordinates)
     AppState.filteredPrograms.forEach(program => {
+        // Skip programs without valid coordinates
+        if (!program.lat || !program.lng || isNaN(program.lat) || isNaN(program.lng)) {
+            console.log(`Skipping "${program.name}" - no valid coordinates`);
+            return;
+        }
+
         const marker = L.marker([program.lat, program.lng], {
             icon: createCustomIcon()
         });
@@ -291,6 +297,9 @@ function addProgramMarkers() {
     if (AppState.markers.length > 0) {
         const group = new L.featureGroup(AppState.markers);
         AppState.map.fitBounds(group.getBounds().pad(0.1));
+    } else if (AppState.filteredPrograms.length > 0) {
+        // Programs exist but none have coordinates
+        console.warn('Programs loaded but none have coordinates to display on map');
     }
 }
 
@@ -304,18 +313,24 @@ function createCustomIcon() {
 }
 
 function createPopupContent(program) {
-    return `
-        <div class="popup-content">
-            <h3>${program.name}</h3>
-            <p><strong>Address:</strong> ${program.address}, ${program.city}, MA ${program.zip}</p>
-            <p><strong>County:</strong> ${program.county}</p>
-            <p><strong>Phone:</strong> ${program.phone}</p>
-            <p><strong>Email:</strong> ${program.email}</p>
-            <p><strong>Services:</strong> ${program.services}</p>
-            <p><strong>Age Range:</strong> ${program.ageRange}</p>
-            <p><strong>Capacity:</strong> ${program.capacity} students</p>
-        </div>
-    `;
+    let content = `<div class="popup-content"><h3>${program.name}</h3>`;
+
+    // Add fields only if they have values
+    if (program.address || program.city || program.zip) {
+        const parts = [program.address, program.city, program.zip].filter(Boolean);
+        content += `<p><strong>Address:</strong> ${parts.join(', ')}</p>`;
+    }
+    if (program.county) content += `<p><strong>County:</strong> ${program.county}</p>`;
+    if (program.region) content += `<p><strong>Region:</strong> ${program.region}</p>`;
+    if (program.phone) content += `<p><strong>Phone:</strong> ${program.phone}</p>`;
+    if (program.email) content += `<p><strong>Email:</strong> ${program.email}</p>`;
+    if (program.website) content += `<p><strong>Website:</strong> ${program.website}</p>`;
+    if (program.services) content += `<p><strong>Services:</strong> ${program.services}</p>`;
+    if (program.ageRange) content += `<p><strong>Age Range:</strong> ${program.ageRange}</p>`;
+    if (program.capacity) content += `<p><strong>Capacity:</strong> ${program.capacity} students</p>`;
+
+    content += `</div>`;
+    return content;
 }
 
 // ===========================

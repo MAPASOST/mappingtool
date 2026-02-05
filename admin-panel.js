@@ -236,51 +236,60 @@ function parseCSVLine(line) {
 }
 
 function validatePrograms(programs) {
-    // Only require absolute essentials: name and coordinates
-    const requiredFields = ['name', 'lat', 'lng'];
+    // Only require name - all other fields optional
     const warnings = [];
+    let programsWithoutCoords = 0;
 
     programs.forEach((program, index) => {
         const rowNum = index + 2;
 
-        // Check required fields with better error messages
-        requiredFields.forEach(field => {
-            if (!program[field] || program[field] === '') {
-                const availableFields = Object.keys(program).filter(k => program[k] !== '').join(', ');
-                throw new Error(
-                    `Row ${rowNum}: Missing required field "${field}"\n\n` +
-                    `Required: name, lat (latitude), lng (longitude)\n` +
-                    `Found columns with data: ${availableFields || 'none'}\n\n` +
-                    `TIP: Make sure your CSV has columns named "name", "lat" (or "latitude"), and "lng" (or "longitude", "lon", "long")`
-                );
-            }
-        });
-
-        // Validate coordinates are numbers
-        if (isNaN(program.lat) || isNaN(program.lng)) {
+        // Check name is present (only required field)
+        if (!program.name || program.name === '') {
             throw new Error(
-                `Row ${rowNum}: Invalid coordinates\n` +
-                `lat: "${program.lat}" (must be a number)\n` +
-                `lng: "${program.lng}" (must be a number)\n\n` +
-                `Example valid coordinates for Massachusetts:\n` +
-                `Boston: lat 42.3601, lng -71.0589`
+                `Row ${rowNum}: Missing required field "name"\n\n` +
+                `Every program must have at least a name.`
             );
         }
 
-        // Warn if coordinates seem outside Massachusetts (but don't fail)
-        if (program.lat < 41 || program.lat > 43 || program.lng < -74 || program.lng > -69) {
-            warnings.push(`Row ${rowNum} (${program.name}): Coordinates may be outside Massachusetts`);
-        }
+        // Check if coordinates are present and valid
+        const hasLat = program.lat && program.lat !== '' && !isNaN(parseFloat(program.lat));
+        const hasLng = program.lng && program.lng !== '' && !isNaN(parseFloat(program.lng));
 
-        // Warn about missing optional but recommended fields
-        if (!program.city) warnings.push(`Row ${rowNum} (${program.name}): Missing city`);
-        if (!program.county) warnings.push(`Row ${rowNum} (${program.name}): Missing county`);
+        if (!hasLat || !hasLng) {
+            programsWithoutCoords++;
+            warnings.push(
+                `Row ${rowNum} (${program.name}): Missing coordinates - ` +
+                `will NOT appear on map. Add "lat" and "lng" columns to display on map.`
+            );
+        } else {
+            // Coordinates exist - validate they're reasonable
+            const lat = parseFloat(program.lat);
+            const lng = parseFloat(program.lng);
+
+            // Warn if coordinates seem outside Massachusetts (but don't fail)
+            if (lat < 41 || lat > 43 || lng < -74 || lng > -69) {
+                warnings.push(
+                    `Row ${rowNum} (${program.name}): Coordinates may be outside Massachusetts ` +
+                    `(lat: ${lat}, lng: ${lng})`
+                );
+            }
+        }
     });
 
-    // Log warnings to console but don't fail
+    // Show summary message about programs without coordinates
+    if (programsWithoutCoords > 0) {
+        console.warn(
+            `\n⚠️  ${programsWithoutCoords} of ${programs.length} program(s) are missing coordinates.\n` +
+            `These will be imported but will NOT appear on the map.\n\n` +
+            `To display on map: Add "lat" (latitude) and "lng" (longitude) columns.\n` +
+            `Get coordinates from Google Maps: Right-click location → "What's here?"\n`
+        );
+    }
+
+    // Log other warnings
     if (warnings.length > 0) {
-        console.warn('Data import warnings:');
-        warnings.forEach(w => console.warn('  - ' + w));
+        console.warn('\nData import details:');
+        warnings.forEach(w => console.warn('  • ' + w));
     }
 }
 
